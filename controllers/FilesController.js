@@ -87,11 +87,18 @@ class FilesController {
 
     const fileId = req.params.id;
     try {
-      const file = await dbClient.client.db().collection('files').findOne({ id: ObjectId(fileId), userId: ObjectId(userId) });
+      const file = await dbClient.client.db().collection('files').findOne({ _id: ObjectId(fileId), userId: ObjectId(userId) });
       if (!file) {
         return res.status(404).json({ error: 'Not found' });
       }
-      return res.status(200).json(file);
+      return res.status(200).json({
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: file.isPublic,
+        parentId: file.parentId,
+      });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Server error' });
@@ -112,18 +119,27 @@ class FilesController {
     }
 
     const { parentId = 0, page = 0 } = req.query;
-    const pageSize = 20;
-    const skip = page * pageSize;
     try {
       const query = { userId: ObjectId(userId) };
       if (parentId !== 0) {
         query.parentId = ObjectId(parentId);
       }
-      const files = await dbClient.client.db().collection('files')
-        .find(query)
-        .skip(skip)
-        .limit(pageSize)
-        .toArray();
+      const files = await dbClient.client.db().collection('files').aggregate([
+        { $match: query },
+        { $skip: page * 20 },
+        { $limit: 20 },
+        {
+          $project: {
+            id: '$_id',
+            _id: 0,
+            userId: 1,
+            name: 1,
+            type: 1,
+            isPublic: 1,
+            parentId: 1,
+          },
+        },
+      ]).toArray();
 
       return res.status(200).json(files);
     } catch (error) {
