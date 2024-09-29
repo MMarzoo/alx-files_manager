@@ -174,14 +174,13 @@ class FilesController {
         { $set: { isPublic: true } },
       );
 
-      const updatedFile = await dbClient.client.db().collection('files').findOne({ _id: ObjectId(FileId) });
       return res.status(200).json({
-        id: updatedFile._id,
-        userId: updatedFile.userId,
-        name: updatedFile.name,
-        type: updatedFile.type,
-        isPublic: updatedFile.isPublic,
-        parentId: updatedFile.parentId,
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: true,
+        parentId: file.parentId,
       });
     } catch (error) {
       console.log(error);
@@ -213,14 +212,13 @@ class FilesController {
         { $set: { isPublic: false } },
       );
 
-      const updatedFile = await dbClient.client.db().collection('files').findOne({ _id: ObjectId(fileId) });
       return res.status(200).json({
-        id: updatedFile._id,
-        userId: updatedFile.userId,
-        name: updatedFile.name,
-        type: updatedFile.type,
-        isPublic: updatedFile.isPublic,
-        parentId: updatedFile.parentId,
+        id: file._id,
+        userId: file.userId,
+        name: file.name,
+        type: file.type,
+        isPublic: false,
+        parentId: file.parentId,
       });
     } catch (error) {
       console.log(error);
