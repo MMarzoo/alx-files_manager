@@ -12,6 +12,10 @@ class FilesController {
       const authKey = `auth_${userToken}`;
       const userID = await redisClient.get(authKey);
 
+      if (!userToken) {
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+
       if (!userID) {
         return res.status(401).json({ error: 'Unauthorized' });
       }
