@@ -19,7 +19,7 @@ class FilesController {
       const {
         name,
         type,
-        parentId = '0',
+        parentId = 0,
         isPublic = false,
         data,
       } = req.body;
@@ -37,8 +37,8 @@ class FilesController {
         return res.status(400).json({ error: 'Missing data' });
       }
 
-      let parentFile = null;
-      if (parentId !== '0') {
+      let parentFile = 0;
+      if (parentId !== 0) {
         parentFile = await dbClient.client.db().collection('files').findOne({ _id: ObjectId(parentId) });
 
         if (!parentFile) {
@@ -61,8 +61,8 @@ class FilesController {
       };
 
       if (type === 'folder') {
-        await dbClient.client.db().collection('files').insertOne(newFile);
-        return res.status(201).json(newFile);
+        const result = await dbClient.client.db().collection('files').insertOne(newFile);
+        return res.status(201).json({ id: result.insertedId, ...newFile });
       }
 
       const folderPath = process.env.FOLDER_PATH || '/tmp/files_manager';
@@ -78,9 +78,9 @@ class FilesController {
 
       newFile.localPath = localPath;
 
-      await dbClient.client.db().collection('files').insertOne(newFile);
+      const result = await dbClient.client.db().collection('files').insertOne(newFile);
 
-      return res.status(201).json(newFile);
+      return res.status(201).json({ id: result.insertedId, ...newFile });
     } catch (error) {
       console.error(error);
       return res.status(500).json({ error: 'Server error' });
