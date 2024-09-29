@@ -4,16 +4,17 @@ import fs from 'fs';
 import path from 'path';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
+import { error } from 'console';
 
 class FilesController {
   static async postUpload(req, res) {
     try {
-      const userToken = req.header('X-Token');
+      const userToken = req.headers['X-Token'];
       const authKey = `auth_${userToken}`;
       const userID = await redisClient.get(authKey);
 
       if (!userToken) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
 
       if (!userID) {
