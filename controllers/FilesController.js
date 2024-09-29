@@ -169,7 +169,7 @@ class FilesController {
         return res.status(404).json({ error: 'Not found' });
       }
 
-      await dbClient.client.db().collection('files').updateone(
+      await dbClient.client.db().collection('files').updateOne(
         { _id: ObjectId(FileId) },
         { $set: { isPublic: true } },
       );
@@ -207,7 +207,7 @@ class FilesController {
         return res.status(404).json({ error: 'Not found' });
       }
 
-      await dbClient.client.db().collection('files').updateone(
+      await dbClient.client.db().collection('files').updateOne(
         { _id: ObjectId(fileId) },
         { $set: { isPublic: false } },
       );
