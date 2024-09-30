@@ -231,35 +231,36 @@ class FilesController {
     const token = req.headers['x-token'];
     const fileId = req.params.id;
 
-    try {
-      const file = await dbClient.client.db().collection('files').findOne({ _id: ObjectId(fileId) });
-      if (!file) {
-        return res.status(404).json({ error: 'Not found' });
-      }
-
-      if (file.type === 'folder') {
-        return res.status(400).json({ error: "A folder doesn't have content" });
-      }
-
-      const tokenKey = `auth_${token}`;
-      const userId = await redisClient.get(tokenKey);
-
-      if (!file.isPublic && (!token || !userId || userId !== file.userId.toString())) {
-        return res.status(404).json({ error: 'Not found' });
-      }
-
-      if (!fs.existsSync(file.localPath)) {
-        return res.status(404).json({ error: 'Not found' });
-      }
-
-      const mimetype = mime.contentType(file.name);
-      res.setHeader('Content-Type', mimetype);
-      return res.setHeader('Content-Type', mimetype)
-        .status(200).sendFile(file.localPath);
-    } catch (error) {
-      console.log(error);
-      return res.status(500).json({ error: 'Server error' });
+    const file = await dbClient.client.db().collection('files').findOne({ _id: ObjectId(fileId) });
+    if (!file) {
+      return res.status(404).json({ error: 'Not found' });
     }
+
+    if (!file.isPublic) {
+      if (!token) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+      const userId = await redisClient.get(`auth_${token}`);
+      if (!userId || userId !== file.userId.toString()) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+    }
+
+    if (file.type === 'folder') {
+      return res.status(400).json({ error: "A folder doesn't have content" });
+    }
+
+    if (!fs.existsSync(file.localPath)) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    const mimeType = mime.contentType(file.name);
+    if (!mimeType) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+
+    return res.setHeader('Content-Type', mimeType)
+      .status(200).sendFile(file.localPath);
   }
 }
 
