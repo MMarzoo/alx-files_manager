@@ -253,10 +253,9 @@ class FilesController {
       }
 
       const mimetype = mime.contentType(file.name);
-      const fileContent = fs.readFileSync(file.localPath);
       res.setHeader('Content-Type', mimetype);
       return res.setHeader('Content-Type', mimetype)
-      .status(200).sendFile(file.localPath);
+        .status(200).sendFile(file.localPath);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: 'Server error' });
