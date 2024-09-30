@@ -22,4 +22,6 @@ route.get('/files', FilesController.getIndex);
 route.put('/files/:id/publish', FilesController.putPublish);
 route.put('/files/:id/unpublish', FilesController.putUnpublish);
 
+route.get('/files/:id/data', FilesController.getFile);
+
 export default route;
