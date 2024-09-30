@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import dbClient from './utils/db';
 
 const fileQueue = new Queue('fileQueue');
+const userQueue = new Queue('userQueue');
 
 fileQueue.process(async (job) => {
   const { userId, fileId } = job.data;
@@ -23,10 +24,26 @@ fileQueue.process(async (job) => {
   }
 
   const Sizes = [500, 250, 100];
-  for (const size of Sizes) {
+  const thumbnailPromises = Sizes.map(async (size) => {
     const thumbnail = await imageThumbnail(file.localPath, { width: size });
     fs.writeFileSync(`${file.localPath}_${size}`, thumbnail);
-  }
+  });
+
+  await Promise.all(thumbnailPromises);
 });
 
-export default fileQueue;
+userQueue.process(async (job) => {
+  const { userId } = job.data;
+
+  if (!userId) {
+    throw new Error('Missing userId');
+  }
+
+  const user = await dbClient.client.db().collection('users').findOne({ _id: ObjectId(userId) });
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  console.log(`Welcome ${user.email}!`);
+});
