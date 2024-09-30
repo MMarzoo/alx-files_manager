@@ -252,14 +252,11 @@ class FilesController {
         return res.status(404).json({ error: 'Not found' });
       }
 
-      const mimetype = mime.lookup(file.name);
-      if (!mimetype) {
-        return res.status(500).json({ error: 'Unable to determine MIME type' });
-      }
-
+      const mimetype = mime.contentType(file.name);
       const fileContent = fs.readFileSync(file.localPath);
       res.setHeader('Content-Type', mimetype);
-      return res.status(200).send(fileContent);
+      return res.setHeader('Content-Type', mimetype)
+      .status(200).sendFile(file.localPath);
     } catch (error) {
       console.log(error);
       return res.status(500).json({ error: 'Server error' });
