@@ -240,8 +240,14 @@ class FilesController {
       if (!token) {
         return res.status(404).json({ error: 'Not found' });
       }
-      const userId = await redisClient.get(`auth_${token}`);
-      if (!userId || userId !== file.userId.toString()) {
+
+      const tokenKey = `auth_${token}`;
+      const userId = await redisClient.get(tokenKey);
+      if (!userId) {
+        return res.status(404).json({ error: 'Not found' });
+      }
+
+      if (userId !== file.userId.toString()) {
         return res.status(404).json({ error: 'Not found' });
       }
     }
