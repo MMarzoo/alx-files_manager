@@ -31,3 +31,18 @@ describe('App Endpoints', () => {
     });
   });
 });
+
+describe('GET /stats', () => {
+  before(() => {
+    // Mock dbClient methods for the stats
+    dbClient.nbUsers = () => Promise.resolve(5); //  Mock the number of users
+    dbClient.nbFiles = () => Promise.resolve(10); // Mock the number of posts
+  });
+
+  it('should return the number of users and files', async () => {
+    const res = await request(app).get('/stats');
+    expect(res.status).to.equal(200);
+    expect(res.body).to.have.property('users', 5);
+    expect(res.body).to.have.property('files', 10);
+  });
+});
