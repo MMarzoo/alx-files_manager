@@ -39,7 +39,7 @@ describe('File Endpoint', () => {
         .set('X-Token', token)
         .send(fileData);
   
-        // console.log(res.body);
+        console.log(res.body);
   
       expect(res.status).to.equal(201);
       expect(res.body).to.have.property('id').that.is.a('string');
@@ -61,6 +61,34 @@ describe('File Endpoint', () => {
       const res = await request(app).put(`/files/${fileId}/unpublish`).set('x-token', 'notAToken');
       expect(res.status).to.equal(401);
       expect(res.body).to.have.property('error', 'Unauthorized');
+    });
+
+    describe('GET /files/:id', () => {
+      it('should retrieve the file by ID', async () => {
+        const res = await request(app)
+          .get(`/files/${fileId}`)
+          .set('X-Token', token);
+  
+        expect(res.status).to.equal(200);
+        expect(res.body).to.have.property('id', fileId);
+        expect(res.body).to.have.property('userId', userId);
+        expect(res.body).to.have.property('name', fileData.name);
+        expect(res.body).to.have.property('type', fileData.type);
+        expect(res.body).to.have.property('isPublic', false);
+        expect(res.body).to.have.property('parentId', 0);
+      });
+
+      it('should return 401 for unauthorized (no token)', async () => {
+        const res = await request(app).get('/files');
+        expect(res.status).to.equal(401);
+        expect(res.body).to.have.property('error', 'Unauthorized');
+      });
+
+      it('should return 401 for unauthorized (no userId found)', async () => {
+        const res = await request(app).get('/files').set('x-token', 'NotAToken');
+        expect(res.status).to.equal(401);
+        expect(res.body).to.have.property('error', 'Unauthorized');
+      });
     });
 
     after(async () => {
