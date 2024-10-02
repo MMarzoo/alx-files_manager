@@ -114,13 +114,13 @@ describe('File Endpoint', () => {
           expect(res.body.files).to.be.an('array').that.has.lengthOf(1);
         });
 
-        // it('should return 200 with an empty array if no files are found', async () => {
-        //   const res = await request(app).get('/files?page=999&limit=10').set('X-Token', token);
-        //   expect(res.status).to.equal(200);
-        //   expect(res.body).to.have.property('files').that.is.an('array').that.is.empty;
-        //   expect(res.body).to.have.property('totalFiles', 0);
-        //   expect(res.body).to.have.property('totalPages', 0); 
-        // });
+        it('should return 200 with an empty array if no files are found', async () => {
+          const res = await request(app).get('/files?page=999&limit=10').set('X-Token', token);
+          expect(res.status).to.equal(200);
+          expect(res.body).to.have.property('files').that.is.an('array').that.is.empty;
+          expect(res.body).to.have.property('totalFiles', 0);
+          expect(res.body).to.have.property('totalPages', 0); 
+        });
       });
     });
 
