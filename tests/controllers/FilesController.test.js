@@ -145,6 +145,19 @@ describe('File Endpoint', () => {
             expect(res.body).to.have.property('error', 'Not found');
           });
         });
+
+        describe('PUT /files/:id/unpublish', () => {
+          it('should publish a file', async () => {
+            const res = await request(app).put(`/files/${fileId}/unpublish`).set('x-token', token);
+            expect(res.status).to.equal(200);
+            expect(res.body).to.have.property('id', fileId);
+            expect(res.body).to.have.property('userId', userId);
+            expect(res.body).to.have.property('name', fileData.name);
+            expect(res.body).to.have.property('type', fileData.type);
+            expect(res.body).to.have.property('isPublic', false);
+            expect(res.body).to.have.property('parentId', 0);
+          });
+        })
       });
     });
 
