@@ -98,9 +98,9 @@ describe('File Endpoint', () => {
         await dbClient.client.db().collection('files').deleteOne({ _id: ObjectId(fileId) });
       }
   
-      // if (folderId) {
-      //   await dbClient.client.db().collection('files').deleteOne({ _id: ObjectId(folderId) });
-      // }
+      if (folderId) {
+        await dbClient.client.db().collection('files').deleteOne({ _id: ObjectId(folderId) });
+      }
   
       await redisClient.del(`auth_${token}`);
     });
