@@ -9,6 +9,7 @@ describe('File Endpoint', () => {
   let userId;
   let token;
   let fileId;
+  let folderId;
 
   const userData = {
     email: 'test@example.com',
