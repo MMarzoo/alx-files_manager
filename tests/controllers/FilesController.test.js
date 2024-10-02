@@ -157,7 +157,19 @@ describe('File Endpoint', () => {
             expect(res.body).to.have.property('isPublic', false);
             expect(res.body).to.have.property('parentId', 0);
           });
-        })
+
+          it('should return 401 for unauthorized (no token)', async () => {
+            const res = await request(app).put(`/files/${fileId}/unpublish`);
+            expect(res.status).to.equal(401);
+            expect(res.body).to.have.property('error', 'Unauthorized');
+          });
+
+          it('should return 401 for unauthorized (no userId found)', async () => {
+            const res = await request(app).put(`/files/${fileId}/unpublish`).set('x-token', 'notAToken');
+            expect(res.status).to.equal(401);
+            expect(res.body).to.have.property('error', 'Unauthorized');
+          });
+        });
       });
     });
 
