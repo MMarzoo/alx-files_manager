@@ -170,6 +170,38 @@ describe('File Endpoint', () => {
             expect(res.body).to.have.property('error', 'Unauthorized');
           });
         });
+
+        describe('GET /files/:id/data', () => {
+          before(async () => {
+            const res = await request(app).post('/files').set('x-token', token).send({
+              name: 'testFolder',
+              type: 'folder',
+            });
+            folderId = res.body.id;
+          });
+
+          it('should return the file content if it\'s public', async () => {
+            await request(app).put(`/files/${fileId}/publish`).set('x-token', token);
+            const res = await request(app).get(`/files/${fileId}/data`);
+            expect(res.status).to.equal(200);
+            expect(res.header['content-type']).to.equal('text/plain; charset=utf-8');
+            expect(res.text).to.equal('Test File');
+          });
+
+          it('should return the file content for an authorized user', async () => {
+            await request(app).put(`/files/${fileId}/unpublish`).set('x-token', token);
+            const res = await request(app).get(`/files/${fileId}/data`).set('x-token', token);
+            expect(res.status).to.equal(200);
+            expect(res.header['content-type']).to.equal('text/plain; charset=utf-8');
+            expect(res.text).to.equal('Test File');
+          });
+
+          it('should return 404 for token not found', async () => {
+            const res = await request(app).get('/files/123456123465/data');
+            expect(res.status).to.equal(404);
+            expect(res.body).to.have.property('error', 'Not found');
+          });
+        });
       });
     });
 
