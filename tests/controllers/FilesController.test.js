@@ -90,6 +90,38 @@ describe('File Endpoint', () => {
         expect(res.status).to.equal(401);
         expect(res.body).to.have.property('error', 'Unauthorized');
       });
+
+      describe('GET /files', () => {
+        it('should retrieve files with pagination', async () => {
+          await request(app).post('/files').set('X-Token', token).send({
+            name: 'file1.txt',
+            type: 'file',
+            data: Buffer.from('Content of file 1').toString('base64'),
+          });
+
+          await request(app).post('/files').set('X-Token', token).send({
+            name: 'file2.txt',
+            type: 'file',
+            data: Buffer.from('Content of file 2').toString('base64'),
+          });
+
+          const res = await request(app).get('/files?page=1&limit=1').set('X-Token', token);
+          expect(res.status).to.equal(200);
+          expect(res.body).to.have.property('page', 1);
+          expect(res.body).to.have.property('limit', 1);
+          expect(res.body).to.have.property('totalFiles').that.is.above(1);
+          expect(res.body).to.have.property('totalPages').that.is.a('number');
+          expect(res.body.files).to.be.an('array').that.has.lengthOf(1);
+        });
+
+        it('should return 200 with an empty array if no files are found', async () => {
+          const res = await request(app).get('/files?page=999&limit=10').set('X-Token', token);
+          expect(res.status).to.equal(200);
+          expect(res.body).to.have.property('files').that.is.an('array').that.is.empty;
+          expect(res.body).to.have.property('totalFiles', 0);
+          expect(res.body).to.have.property('totalPages', 0); 
+        });
+      });
     });
 
     after(async () => {
