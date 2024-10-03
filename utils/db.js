@@ -1,51 +1,48 @@
 import { MongoClient } from 'mongodb';
 
-// Task 1 Main code //
+const HOST = process.env.DB_HOST || 'localhost';
+const PORT = process.env.DB_PORT || '27017';
+const DATABASE = process.env.DB_DATABASE || 'files_manager';
+const URI = `mongodb://${HOST}:${PORT}`;
+
 class DBClient {
   constructor() {
-    const dbHost = process.env.DB_HOST || 'localhost';
-    const dbPort = process.env.DB_PORT || 27017;
-    const dbName = process.env.DB_DATABASE || 'files_manager';
-    this.dataClient = new MongoClient(`mongodb://${dbHost}:${dbPort}/${dbName}`, { useUnifiedTopology: true });
-    this.dataClient.connect();
+    this.client = new MongoClient(URI, { useUnifiedTopology: true });
+    this.connected = false;
+    this.client
+      .connect()
+      .then(() => {
+        this.connected = true;
+        this.db = this.client.db(DATABASE);
+        this.users = this.db.collection('users');
+        this.files = this.db.collection('files');
+      })
+      .catch((err) => {
+        this.connected = false;
+        console.error('Error connecting to the database:', err);
+      });
   }
 
   isAlive() {
-    try {
-      return this.dataClient.isConnected();
-    } catch (err) {
-      return false;
-    }
+    return this.connected;
   }
 
   async nbUsers() {
-    return new Promise((resolve, reject) => {
-      this.dataClient
-        .db()
-        .collection('users')
-        .countDocuments({}, (err, count) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(count);
-          }
-        });
-    });
+    try {
+      return this.db.collection('users').countDocuments();
+    } catch (err) {
+      console.error('Error counting users:', err);
+      return 0;
+    }
   }
 
   async nbFiles() {
-    return new Promise((resolve, reject) => {
-      this.dataClient
-        .db()
-        .collection('files')
-        .countDocuments({}, (err, count) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve(count);
-          }
-        });
-    });
+    try {
+      return this.db.collection('files').countDocuments();
+    } catch (err) {
+      console.error('Error counting files:', err);
+      return 0;
+    }
   }
 }
 
