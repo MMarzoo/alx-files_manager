@@ -7,29 +7,31 @@ const URI = `mongodb://${HOST}:${PORT}`;
 
 class DBClient {
   constructor() {
-    this.client = new MongoClient(URI, { useUnifiedTopology: true });
     this.connected = false;
+    this.db = null;
+    // Attempt to connect to MongoDB
+    this.client = new MongoClient(URI, { useUnifiedTopology: true });
     this.client
       .connect()
       .then(() => {
         this.connected = true;
         this.db = this.client.db(DATABASE);
-        this.users = this.db.collection('users');
-        this.files = this.db.collection('files');
+        console.log('Connected to the database');
       })
       .catch((err) => {
-        this.connected = false;
         console.error('Error connecting to the database:', err);
       });
   }
 
   isAlive() {
-    return this.connected;
+    // Return false if there was an error connecting
+    return this.connected && this.db !== null;
   }
 
   async nbUsers() {
+    if (!this.isAlive()) return 0;
     try {
-      return this.db.collection('users').countDocuments();
+      return await this.db.collection('users').countDocuments();
     } catch (err) {
       console.error('Error counting users:', err);
       return 0;
@@ -37,8 +39,9 @@ class DBClient {
   }
 
   async nbFiles() {
+    if (!this.isAlive()) return 0;
     try {
-      return this.db.collection('files').countDocuments();
+      return await this.db.collection('files').countDocuments();
     } catch (err) {
       console.error('Error counting files:', err);
       return 0;
